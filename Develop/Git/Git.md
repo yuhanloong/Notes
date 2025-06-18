@@ -72,13 +72,19 @@ git add .
 git commit -m 'update'
 git push
 
-# 更换远程仓库地址
-# 查看远端地址（https://github.com/yuhanloong/TyporaWorkspace.git）
+########################## 初次提交 ##########################
+# 关联远程仓库
+git remote add origin https://github.com/yuhanloong/Notes.git
+# 设置本地 main 分支跟踪远程 main 分支
+git branch --set-upstream-to=origin/main main
+
+########################## 更换远程仓库地址 ##########################
+# 查看远端地址（https://github.com/yuhanloong/Notes.git）
 git remote -v
 # 查看远端仓库名（origin）
 git remote
 # 重新设置远程仓库
-git remote set-url origin https://github.com/yuhanloong/TyporaWorkspace.git
+git remote set-url origin https://github.com/yuhanloong/Notes.git
 ```
 
 # 资源
