@@ -1,4 +1,4 @@
-# 安装Homebrew
+# Homebrew
 
 安装 homebrew：
 
