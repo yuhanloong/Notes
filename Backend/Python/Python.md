@@ -340,7 +340,7 @@ print("函数外", num1, num2) # 函数外 10 200
 
 # 15.数据容器
 
-## list（列表）
+## list(列表)
 
 **一批数据、可修改、可重复的存储场景**
 
@@ -411,7 +411,7 @@ for item in list:
 print()
 ```
 
-## tuple（元组）
+## tuple(元组)
 
 **一批数据、不可修改、可重复的存储场景**
 
@@ -460,7 +460,7 @@ for item in tupleList:
 print()
 ```
 
-## str（字符串）
+## str(字符串)
 
 **一串字符串的存储场景**
 
@@ -540,7 +540,7 @@ print(list[::-1]) # [9, 8, 7, 6, 5, 4, 3, 2, 1]
 print(list[3:1:-1]) # [4, 3]
 ```
 
-## set（集合）
+## set(集合)
 
 **一批数据，去重存储场景**
 
@@ -604,7 +604,7 @@ for item in mySet:
 print()
 ```
 
-## dict（字典、映射）
+## dict(字典、映射)
 
 **一批数据，可用 key 检索 value 的存储场景**
 
@@ -1133,15 +1133,376 @@ print(type(array)) # <class 'list'>
 print(array) # [{'name': 'zhangsan', 'age': 18}, {'name': 'list', 'age': 19}]
 ```
 
-# 20.PyEcharts数据可视化
+# 20.PyEcharts(数据可视化)
 
-Echarts 框架的 Python 版本：PyEcharts
+Echarts 框架的 Python 版本。
 
 安装：
 
-- pip install pyecharts
+```bash
+pip install pyecharts
+```
 
 官方画廊：https://gallery.pyecharts.org/#/
 
 # 21.面向对象
+
+## 初识对象
+
+```python
+# 学生类
+class Student:
+    # 成员变量
+    name = None
+    gender = None
+    age = None
+    # 私有成员变量，命名以__(两个下划线开头)，其他与java一样。
+    __id = '001'
+
+    # 构造方法，self就是this，只能定义一个
+    def __init__(self, name, gender, age):
+        self.name = name
+        self.gender = gender
+        self.age = age
+
+    # 成员方法，self就是this，传参的时候可以当它不存在
+    def say_hi(self, name):
+        self.name = name
+        print(f'Hi大家好，我是{self.name}')
+
+    # 私有成员方法，命名以__(两个下划线开头)，其他与java一样。
+    def __private_fn(self):
+        print('我是私有成员方法')
+
+    # 访问私有成员
+    def visit_private_members(self):
+        print(f'id是{self.__id}')
+        self.__private_fn()
+
+
+# 创建对象
+student = Student('zhangsan', '男', 18)
+print('name', student.name)
+print('gender', student.gender)
+print('age', student.age)
+print()
+
+# 对象属性赋值
+student.name = 'list'
+student.gender = '男'
+student.age = 21
+print('name', student.name)
+print('gender', student.gender)
+print('age', student.age)
+print()
+
+# 调用 say_hi
+student.say_hi('zhangsan')
+# 调用 visit_private_members
+student.visit_private_members()
+```
+
+## 魔术方法
+
+魔术方法就是类的内置方法，`__init__`就是内置方法之一。
+
+- `__init__`：构造方法，创建对象时自动调用
+- `__str__`：转字符串方法，打印对象时自动调用
+- `__eq__`：等于方法，==时自动调用，且!=时也会调用
+- `__lt__`：小于方法，<时自动调用，且>时也会调用
+- `__le__`：小于等于方法，<=时自动调用，且>=时也会调用
+- `__gt__`：大于方法，>时自动调用，且<时也会调用
+- `__ge__`：大于等于方法，>=时自动调用，且<=时也会调用
+
+比较方法只需要定义`__eq__`、`__lt__`、`__le__`就能进行所有的比较(==、<、<=、>、>=)
+
+```python
+# 学生类
+class Student:
+    # 成员变量
+    name = None
+    gender = None
+    age = None
+
+    def __init__(self, name, gender, age):
+        self.name = name
+        self.gender = gender
+        self.age = age
+
+    # 定义转字符串方法，这个就是toString
+    def __str__(self):
+        return f'{self.name} {self.gender} {self.age}'
+
+    # 定义等于方法，==时自动调用，且!=时也会调用
+    def __eq__(self, other):
+        return self.age == other.age
+
+    # 定义小于方法，<时自动调用，且>时也会调用
+    def __lt__(self, other):
+        return self.age < other.age
+
+    # 定义小于等于方法，<=时自动调用，且>=时也会调用
+    def __le__(self, other):
+        return self.age <= other.age
+
+
+# 创建对象
+student = Student('zhangsan', '男', 18)
+print(student)
+student2 = Student('lisi', '男', 21)
+print(student2)
+print()
+
+# 调用比较方法
+print(student == student2)  # False
+print(student < student2)  # True
+print(student <= student2)  # True
+print()
+```
+
+## 继承
+
+用()继承类，可以继承多个类，从左往右依次继承，如果父类之间有同名成员就用先继承的。
+
+不写默认继承Object。
+
+调用父类成员：
+
+- 父类名.成员变量
+- 父类名.成员方法(self)
+- super().成员方法
+- super().成员方法()
+
+```python
+# 父类
+class Father:
+    name = 'Father name'
+
+
+# 父类2
+class Father2:
+    name2 = 'Father2 name2'
+
+
+# 子类，用()继承类，可以继承多个类，从左往右依次继承，如果父类之间有同名成员就用先继承的
+class Son(Father, Father2):
+    name = 'Son name'
+    gender = None
+    age = None
+
+    def __init__(self, name, name2, gender, age):
+        self.name = name
+        self.name2 = name2
+        self.gender = gender
+        self.age = age
+
+    def get_super_name(self):
+        return f'Father的name, 类名方式: {Father.name}, super()方式: {super().name}'
+
+
+son = Son('zhangsan', 'lisi', '男', 18)
+
+# 子类重写的name
+print(son.name)
+# 父类的name
+print(son.get_super_name())
+```
+
+## 类型注解
+
+就像typescript，但并不会真正对类型做校验，也就是个注释。
+
+类型注解主要功能呢在于：
+
+- 帮助第三方IDE工具（如PyCharm）对代码进行类型推断，协助做代码提示
+- 帮助开发者自身对变量进行类型注释（备注）
+
+变量直接显示赋值的话不用写类型，一般无法直接看出变量类型之时才会写类型注解。
+
+```python
+from typing import Union
+
+# 基础类型
+var_0: int = 10
+# 也可以写到注释上，type: 类型
+var_1 = 10  # type: int
+var_2: float = 3.14
+var_3: bool = True
+var_4: str = 'zhangsan'
+
+# 容器类型
+var_5: list = [1, 2, 3]
+var_6: tuple = ('zhangsan', 18, True)
+var_7: set = {1, 2, 3}
+var_8: dict = {'name': 'zhangsan'}
+
+# 容器类型详细
+var_9: list[int] = [1, 2, 3]
+var_10: tuple[str, int, bool] = ('zhangsan', 18, True)
+var_11: set[int] = {1, 2, 3}
+var_12: dict[str, int] = {'age': 18}
+
+
+# 类
+class Student:
+    pass
+
+
+stu: Student = Student()
+
+
+# 函数
+def sum(x: int, y: int) -> int:
+    return x + y
+
+
+print(sum(1, 2))
+
+# Union联合类型，int或str
+var_13: list[Union[int, str]] = ['a', 'b', 'c', 1, 2, 3]
+var_14: dict[str, Union[int, str]] = {'name': 'zhangsan', 'age': 18}
+```
+
+## 多态
+
+跟java一样。
+
+```python
+# 抽象类：动物
+class Animal:
+    def speak(self):
+        pass
+
+
+# 具体类：狗
+class Dog(Animal):
+    def speak(self):
+        print('汪汪汪')
+
+
+# 具体类：猫
+class Cat(Animal):
+    def speak(self):
+        print('喵喵喵')
+
+
+def make_noise(animal: Animal):
+    animal.speak()
+
+
+make_noise(Dog())  # 汪汪汪
+make_noise(Cat())  # 喵喵喵
+```
+
+# 22.PyMySQL(Python操作MySQL)
+
+安装：
+
+```bash
+pip install pymysql
+```
+
+使用：
+
+```python
+from pymysql import Connection
+
+# 连接 mysql
+conn = Connection(
+    host='localhost',
+    port=3306,
+    user='root',
+    passwd='administrator',
+    database='test',  # 指定数据库
+    autocommit=True  # 设置自动提交事务
+)
+
+# 打印 mysql 软件信息
+print(conn.get_server_info())  # 8.0.36
+
+# 选择 test 数据库(如果没有指定数据库)
+# conn.select_db("test")
+
+# 获取游标对象
+cursor = conn.cursor()
+
+# 如果存在则删除 t_user 表
+cursor.execute("drop table if exists t_user")
+# 如果不存在则创建 t_user 表
+cursor.execute("""create table if not exists t_user(
+    id bigint primary key auto_increment comment '主键ID',
+    name varchar(10) unique comment '名称',
+    gender char(1) default '男' comment '性别',
+    age tinyint comment '年龄',
+    phone varchar(11) unique comment '电话'
+) engine=InnoDB default charset=utf8 comment='用户表'""")
+
+# 添加数据
+cursor.execute("insert into t_user values(0, 'admin', '男', 18, '17374000851'), (0, 'zhangsan', '男', 18, '13200000000')")
+# 提交事务(如果没有设置自动提交事务)
+# conn.commit()
+
+# 查询所有数据
+cursor.execute("select * from t_user")
+results: tuple = cursor.fetchall()
+print(results)  # ((1, 'admin', '男', 18, '17374000851'), (2, 'zhangsan', '男', 18, '13200000000'))
+for item in results:
+    print(item)  # (1, 'admin', '男', 18, '17374000851')
+
+# 关闭连接
+conn.close()
+```
+
+# 23.PySpark
+
+定义：Apache Spark 是用于大规模数据（large-scala data）处理的统一（unified）分析引擎。
+
+简单来说，Spark 是一款分布式的计算框架，用于调度成百上千的服务器集群，计算 TB、PB 乃至 EB 级别的海量数据。
+
+Spark 作为全球顶级的分布式计算框架，支持众多的编程语言进行开发。
+
+而 Python 语言，则是 Spark 重点支持的方向。
+
+Spark 对 Python 语言的支持，重点体现在 Python 第三方库：PySpark 之上。
+
+PySpark 是由 Spark 官方开发的 Python 语言第三方库。
+
+Python 开发者可以使用 pip 程序快速的安装 PySpark 并像其它三方库那样直接使用。
+
+安装：
+
+```bash
+pip install pyspark
+
+# 或用国内代理镜像网站（清华大学源）
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyspark
+```
+
+使用：
+
+```python
+from pyspark import SparkConf, SparkContext
+
+# 创建 SparkConf 类对象
+conf = SparkConf().setMaster("local[*]").setAppName("test_spark_app")
+# 基于 SparkConf 类对象创建 SparkContext 类对象
+sc = SparkContext(conf=conf)
+
+# 打印 PySpark 的运行版本
+print(sc.version)  # 4.0.0
+
+# 停止 SparkContext 对象的运行（停止 PySpark 程序）
+sc.stop()
+```
+
+SparkContext 类对象，是 PySpark 编程中一切功能的入口。
+
+PySpark 的编程，主要分为如下三大步骤：
+
+1. 数据输入
+   - 通过 SparkContext 类对象的成员方法完成数据的读取操作读取后得到 RDD 类对象
+2. 数据处理计算
+   - 通过 RDD 类对象的成员方法完成各种数据计算的需求
+3. 数据输出
+   - 将处理完成后的 RDD 对象调用各种成员方法完成写出文件、转换为 list 等操作
 
