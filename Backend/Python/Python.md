@@ -1506,3 +1506,301 @@ PySpark 的编程，主要分为如下三大步骤：
 3. 数据输出
    - 将处理完成后的 RDD 对象调用各种成员方法完成写出文件、转换为 list 等操作
 
+## 数据输入(Python数据转RDD对象)
+
+PySpark 支持多种数据的输入，在输入完成后，都会得到一个：RDD 类的对象。
+
+RDD 全称为：弹性分布式数据集（Resilient Distributed Datasets）。
+
+PySpark 针对数据的处理，都是以 RDD 对象作为载体，即：
+
+- 数据存储在 RDD 内
+- 各类数据的计算方法，也都是 RDD 的成员方法
+- RDD 的数据计算方法，返回依旧是 RDD 对象
+
+Python 数据转 RDD 对象：
+
+```python
+from pyspark import SparkConf, SparkContext
+
+conf = SparkConf().setMaster("local[*]").setAppName("test_spark_app")
+sc = SparkContext(conf=conf)
+
+# Python 数据转 RDD 对象
+rdd1 = sc.parallelize([1, 2, 3, 4, 5])  # list
+rdd2 = sc.parallelize((1, 2, 3, 4, 5))  # tuple
+rdd3 = sc.parallelize({1, 2, 3, 4, 5})  # set
+rdd4 = sc.parallelize({"key1": 1, "key2": 2, "key3": 3, "key4": 4, "key5": 5})  # dict
+rdd5 = sc.parallelize("abcdefg")  # str
+rdd6 = sc.textFile("./files/a.txt")  # 读取文件
+# 查看 RDD 数据
+print(rdd1.collect())  # [1, 2, 3, 4, 5]
+print(rdd2.collect())  # [1, 2, 3, 4, 5]
+print(rdd3.collect())  # [1, 2, 3, 4, 5]
+print(rdd4.collect())  # ['key1', 'key2', 'key3', 'key4', 'key5']
+print(rdd5.collect())  # ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+print(rdd6.collect())  # ['aaa', 'bbb', 'ccc']
+print()
+
+sc.stop()
+```
+
+注意：
+
+- 字符串会被拆分出一个个的字符，存入 RDD 对象
+- 字典仅有 key 会被存入 RDD 对象
+
+## 数据计算(返回值还是RDD的函数)
+
+```python
+from pyspark import SparkConf, SparkContext
+
+conf = SparkConf().setMaster("local[*]").setAppName("test_spark_app")
+sc = SparkContext(conf=conf)
+
+# map 映射
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+new_rdd = rdd.map(lambda item: item * 10)
+print(new_rdd.collect())  # [10, 20, 30, 40, 50]
+print()
+
+# flatMap 映射并扁平化，也就是多维数组变一维数组
+rdd = sc.parallelize(['zhangsan lisi', 'wangwu zhaoliu'])
+new_rdd = rdd.map(lambda item: item.split(' '))
+print(new_rdd.collect())  # [['zhangsan', 'lisi'], ['wangwu', 'zhaoliu']]
+new_rdd = rdd.flatMap(lambda item: item.split(' '))
+print(new_rdd.collect())  # ['zhangsan', 'lisi', 'wangwu', 'zhaoliu']
+print()
+
+# reduceByKey 按照 key 汇总
+rdd = sc.parallelize([('男', 18), ('男', 19), ('女', 18), ('女', 20), ('女', 19)])
+new_rdd = rdd.reduceByKey(lambda total, item: total + item)
+print(new_rdd.collect())  # [('女', 57), ('男', 37)]
+print()
+
+# filter 过滤
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+new_rdd = rdd.filter(lambda item: item >= 3)
+print(new_rdd.collect())  # [3, 4, 5]
+print()
+
+# distinct 去重
+rdd = sc.parallelize([1, 2, 2, 3, 4, 5, 5, 5])
+new_rdd = rdd.distinct()
+print(new_rdd.collect())  # [1, 2, 3, 4, 5]
+print()
+
+# sortBy 排序
+rdd = sc.parallelize([{"id": 1}, {"id": 2}, {"id": 5}, {"id": 4}, {"id": 3}])
+new_rdd = rdd.sortBy(lambda item: item["id"], ascending=False, numPartitions=1)
+print(new_rdd.collect())  # [{'id': 5}, {'id': 4}, {'id': 3}, {'id': 2}, {'id': 1}]
+print()
+
+sc.stop()
+```
+
+## 数据输出(返回值不是RDD的函数)
+
+修改 RDD 分区为 1 个：
+
+- 方式1：
+
+  - ```python
+    conf.set('spark.default.parallelism', '1')
+    ```
+
+- 方式2：
+
+  - ```python
+    rdd = sc.parallelize([1, 2, 3, 4, 5], numSlices=1)
+    # 或者
+    rdd = sc.parallelize([1, 2, 3, 4, 5], 1)
+    ```
+
+```python
+from pyspark import SparkConf, SparkContext
+
+conf = SparkConf().setMaster("local[*]").setAppName("test_spark_app")
+# conf.set('spark.default.parallelism', '1')  # 修改 RDD 分区为 1 个
+sc = SparkContext(conf=conf)
+
+# collect 收集全部数据到驱动程序(Driver)的内存中，并以 Python 列表的形式返回，RDD 对象转 Python 列表
+rdd = sc.parallelize(['a', 'b', 'c', 'd', 'e'])
+list: list = rdd.collect()
+print(list)
+print()
+
+# foreach 遍历，无序
+rdd = sc.parallelize(['a', 'b', 'c', 'd', 'e'])
+new_rdd = rdd.foreach(lambda item: print('foreach: ' + item))
+print()
+
+# reduce 汇总
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+result = rdd.reduce(lambda total, item: total + item)
+print(result)  # 15
+print()
+
+# take 取出前几个
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+result = rdd.take(3)
+print(result)  # [1, 2, 3]
+print()
+
+# count 总数
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+result = rdd.count()
+print(result)  # 5
+print()
+
+# 写入文件
+# rdd = sc.parallelize([1, 2, 3, 4, 5], numSlices=1)  # 修改 RDD 分区为 1 个
+rdd = sc.parallelize([1, 2, 3, 4, 5], 1)  # 修改 RDD 分区为 1 个
+rdd.saveAsTextFile('./output')
+
+sc.stop()
+```
+
+# 24.装饰器(高阶函数)
+
+一般写法(闭包写法)：
+
+```python
+# 装饰器函数
+def outer(fn):
+    def inner():
+        print('我要睡觉了')
+        fn()
+        print('我起床了')
+    return inner
+
+
+# 睡觉函数
+def sleep():
+    import random
+    import time
+    print('睡眠中......')
+    time.sleep(random.randint(1, 5))
+
+
+fn = outer(sleep)
+fn()
+```
+
+语法糖：
+
+```python
+# 装饰器函数
+def outer(fn):
+    def inner():
+        print('我要睡觉了')
+        fn()
+        print('我起床了')
+    return inner
+
+
+# 睡觉函数
+@outer
+def sleep():
+    import random
+    import time
+    print('睡眠中......')
+    time.sleep(random.randint(1, 5))
+
+
+sleep()
+```
+
+# 25.多线程编程
+
+thread_obj = threading.Thread([group [, target [, name [, args [, kwargs]]]]])
+
+- group：暂时无用，未来功能的预留参数
+- target：执行的目标任务名
+- args：以元组的方式给执行任务传参
+- kwargs：以字典方式给执行任务传参
+- name：线程名，一般不用设置
+
+```python
+import threading
+import time
+
+
+# 唱歌函数
+def sing(msg):
+    while True:
+        print(msg)
+        time.sleep(1)
+
+
+# 跳舞函数
+def dance(msg):
+    while True:
+        print(msg)
+        time.sleep(1)
+
+
+# 创建线程
+sing_thread = threading.Thread(target=sing, args=('我在唱歌，啦啦啦...', ))
+dance_thread = threading.Thread(target=dance, kwargs={'msg': '我在跳舞，哗哗哗哗哗'})
+# 启动线程
+sing_thread.start()
+dance_thread.start()
+```
+
+# 26.网络编程
+
+Socket 服务端：
+
+```python
+import socket
+
+# 创建 socket 对象
+socket_server = socket.socket()
+# 绑定 IP 和端口
+socket_server.bind(('localhost', 8080))
+# 开始监听端口，允许 5 个连接，超出会等待
+socket_server.listen(5)
+# 等待客户端连接
+conn, addr = socket_server.accept()
+print(f'接收到客户端连接，连接来自：{addr}')
+# 接收客户端消息，用 while True 可持续和客户端交互
+while True:
+    # 接收客户端消息，缓冲区大小 1024，以 utf-8 解码
+    recv_msg = conn.recv(1024).decode('utf-8')
+    # 客户端发送 exit 表示退出
+    if recv_msg == 'exit':
+        break
+    print('接收到客户端的消息：', recv_msg)
+    # 回复消息
+    conn.send('你好呀'.encode('utf-8'))
+# 关闭客户端连接
+conn.close()
+# 关闭服务端连接
+socket_server.close()
+```
+
+Socket 客户端：
+
+```python
+import socket
+
+# 创建 socket 对象
+socket_client = socket.socket()
+# 连接到服务端
+socket_client.connect(('localhost', 8080))
+# 发送消息，用 while True 可持续和服务端交互
+while True:
+    msg = input('请输入要发送的消息：')
+    # 发送消息
+    socket_client.send(msg.encode('utf-8'))
+    # 输入 exit 表示退出
+    if msg == 'exit':
+        break
+    # 接收客户端消息，缓冲区大小 1024，以 utf-8 解码
+    recv_msg = socket_client.recv(1024).decode('utf-8')
+    print('接收到服务端的消息：', recv_msg)
+# 关闭连接
+socket_client.close()
+```
+
